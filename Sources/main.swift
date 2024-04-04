@@ -1,5 +1,19 @@
 import Foundation
 
+struct DustloopResponse: Decodable {
+  let cargoquery: [TitleData]
+}
+
+struct TitleData: Decodable {
+  let title: MoveData
+}
+
+struct MoveData: Decodable {
+  let damage: String?
+  let input: String?
+  let name: String?
+}
+
 var dustloopRequest = URLComponents()
 dustloopRequest.scheme = "https"
 dustloopRequest.host = "www.dustloop.com"
@@ -25,7 +39,7 @@ print(url.absoluteString)
 let session = URLSession.shared
 let semaphore = DispatchSemaphore(value: 0)
 
-let task = session.dataTask(with: url) { (data, response, error) in
+let task = session.dataTask(with: url) { (data: Data?, response, error) in
   if let error = error {
     print("Error: \(error.localizedDescription)")
     return
@@ -39,10 +53,9 @@ let task = session.dataTask(with: url) { (data, response, error) in
 
   // Parse the JSON data
   do {
-    let json = try JSONSerialization.jsonObject(with: data)
-    if let jsonData = json as? [String: Any] {
-      print(jsonData)
-    }
+    let jsonString = try JSONDecoder().decode(DustloopResponse.self, from: data)
+    print(jsonString)
+
   } catch {
     print("Error parsing JSON: \(error)")
   }
